@@ -27,3 +27,6 @@ before_script:
   - sh -c "if [ '$DB' = 'mariadb' ]; then mysql -e 'CREATE DATABASE IF NOT EXISTS testing;'; fi"
 script:
   - vendor/bin/phpunit -d memory_limit=512M --colors=never -c ci.phpunit.xml -vv
+
+notifications:
+    email: false
