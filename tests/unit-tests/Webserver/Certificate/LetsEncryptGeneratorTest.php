@@ -28,7 +28,7 @@ class LetsEncryptGeneratorTest extends Test
     protected function duringSetUp(Application $app)
     {
         $app['config']->set('webserver.lets-encrypt.directory-url', 'https://acme-staging.api.letsencrypt.org/directory');
-        $app['config']->set('webserver.lets-encrypt.agreement-url', 'https://acme-staging.api.letsencrypt.org/terms');
+        $app['config']->set('webserver.lets-encrypt.agreement-url', 'https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf');
         $app['config']->set('webserver.lets-encrypt.key-pair.private', __DIR__ . '/../../../../ci-lets-encrypt-private.pem');
         $app['config']->set('webserver.lets-encrypt.key-pair.public', __DIR__ . '/../../../../ci-lets-encrypt-public.pem');
 

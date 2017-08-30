@@ -22,6 +22,7 @@ use Hyn\Tenancy\Contracts\Generator\GeneratesConfiguration;
 use Hyn\Tenancy\Contracts\Generator\SavesToPath;
 use Hyn\Tenancy\Exceptions\CertificateRequestFailure;
 use Hyn\Tenancy\Models\Website;
+use Illuminate\Support\Str;
 
 class LetsEncryptGenerator implements GeneratesConfiguration, SavesToPath
 {
@@ -54,10 +55,13 @@ class LetsEncryptGenerator implements GeneratesConfiguration, SavesToPath
     {
         try {
             $this->acme->registerAccount(
-                config('webserver.lets-encrypt.agreement-url')
+                config('webserver.lets-encrypt.agreement-url'),
+                config('webserver.lets-encrypt.email')
             );
         } catch (MalformedServerException $e) {
-            // ..
+            if (!Str::startsWith($e->getMessage(), 'Registration key is already in use')) {
+                throw $e;
+            }
         }
 
         /** @var Hostname $commonName */

@@ -28,6 +28,11 @@ return [
         'enabled' => true,
 
         /**
+         * Mail address to connect certificates to.
+         */
+        'email' => config('mail.from.address'),
+
+        /**
          * Specify the path to your public and private keys. If not specified, tenancy will generate this
          * files on your behalf. Make sure you back up these files as well.
          */
