@@ -20,8 +20,6 @@ cache:
 .mariadb_template: &mariadb
     services:
         - mariadb:latest
-        - name: acmephp/testing-ca
-          alias: boulder
     variables:
         DB_HOST: mariadb
         DB_CONNECTION: mysql
@@ -32,8 +30,6 @@ cache:
 .pgsql_template: &pgsql
     services:
         - postgres:latest
-        - name: acmephp/testing-ca
-          alias: boulder
     variables:
         DB_HOST: postgres
         DB_CONNECTION: pgsql
