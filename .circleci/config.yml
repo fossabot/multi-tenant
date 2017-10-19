@@ -55,8 +55,11 @@ references:
             - POSTGRES_PASSWORD: testing
 
     boulder: &boulder
-        image: containous/boulder
+        image: acmephp/testing-ca
         name: boulder
+        environment:
+            - BOULDER_CALLBACK_PORT: 80
+            - BOULDER_MYSQL_PORT: 3306
 
     environment: &environment
         - DB_DATABASE: testing
