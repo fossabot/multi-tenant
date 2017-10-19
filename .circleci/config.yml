@@ -41,19 +41,23 @@ references:
         image: mysql:latest
         name: mysql
         environment: *mysql_environment
+
     mariadb: &mariadb
         image: mariadb:latest
         name: mariadb
         environment: *mysql_environment
+
     pgsql: &pgsql
         image: postgres:latest
         environment:
             - POSTGRES_DB: testing
             - POSTGRES_USER: testing
             - POSTGRES_PASSWORD: testing
+
     boulder: &boulder
         image: containous/boulder
         name: boulder
+
     environment: &environment
         - DB_DATABASE: testing
         - DB_USERNAME: testing
@@ -68,6 +72,7 @@ jobs:
             - *mysql
             - *mariadb
             - *pgsql
+            - *boulder
         <<: *steps
     "php-7.1-apache":
         docker:
@@ -76,6 +81,7 @@ jobs:
             - *mysql
             - *mariadb
             - *pgsql
+            - *boulder
         <<: *steps
     "php-7.0-nginx":
         docker:
@@ -84,6 +90,7 @@ jobs:
             - *mysql
             - *mariadb
             - *pgsql
+            - *boulder
         <<: *steps
     "php-7.1-nginx":
         docker:
@@ -92,12 +99,14 @@ jobs:
             - *mysql
             - *mariadb
             - *pgsql
+            - *boulder
         <<: *steps
     coverage:
         docker:
             - image: php:7.1
               environment: *environment
             - *mariadb
+            - *boulder
         working_directory: ~/repo
         steps:
             - checkout
