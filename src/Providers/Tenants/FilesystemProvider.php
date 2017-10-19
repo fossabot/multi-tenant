@@ -50,4 +50,11 @@ class FilesystemProvider extends ServiceProvider
             'root' => storage_path('app/tenancy/tenants')
         ]);
     }
+
+    public function provides()
+    {
+        return [
+            'tenancy.disk'
+        ];
+    }
 }
