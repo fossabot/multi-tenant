@@ -36,6 +36,14 @@ return [
         'random-id-generator' => Hyn\Tenancy\Generators\Uuid\ShaGenerator::class,
 
         /**
+         * Enable this flag in case you're using a driver that does not support
+         * database username or database name with a length of more than 32 characters.
+         *
+         * This should be enabled for MySQL, but not for MariaDB and PostgreSQL.
+         */
+        'uuid-limit-length-to-32' => env('LIMIT_UUID_LENGTH_32', false),
+
+        /**
          * Specify the disk you configured in the filesystems.php file where to store
          * the tenant specific files, including media, packages, routes and other
          * files for this particular website.
@@ -118,10 +126,13 @@ return [
          * is set up automatically by this package.
          *
          * @see src/Database/Connection.php
+         * @var system-connection-name The database connection name to use for the global/system database.
+         * @var tenant-connection-name The database connection name to use for the tenant database.
+         * @var tenant-migration-name The database connection name to use for the tenant migrations.
          */
         'system-connection-name' => env('TENANCY_SYSTEM_CONNECTION_NAME', Connection::DEFAULT_SYSTEM_NAME),
         'tenant-connection-name' => env('TENANCY_TENANT_CONNECTION_NAME', Connection::DEFAULT_TENANT_NAME),
-        'tenant-migration-name' => env('TENANCY_MIGRATION_CONNECTION_NAME', Connection::DEFAULT_MIGRATION_NAME),
+        'migration-connection-name' => env('TENANCY_MIGRATION_CONNECTION_NAME', Connection::DEFAULT_MIGRATION_NAME),
 
         /**
          * The tenant division mode specifies to what database websites will be
@@ -147,11 +158,20 @@ return [
          */
         'tenant-migrations-path' => false,
 
+
+        /**
+         * Seeds the newly created tenant database based on this Seeder.
+         *
+         * @info requires tenant-migrations-path to be in use.
+         *
+         * @warn specify a valid fully qualified class name.
+         * @example App\Seeders\AdminSeeder::class
+         */
+        'tenant-seed-class' => false,
         /**
          * Automatically generate a tenant database based on the random id of the
          * website.
          *
-         * @see
          * @info set to false to disable.
          */
         'auto-create-tenant-database' => true,
@@ -161,7 +181,6 @@ return [
          * website changes. This should not be too common, but in case it happens
          * we automatically want to move databases accordingly.
          *
-         * @see
          * @info set to false to disable.
          */
         'auto-rename-tenant-database' => true,
@@ -170,7 +189,6 @@ return [
          * Automatically deletes the tenant specific database and all data
          * contained within.
          *
-         * @see
          * @info set to true to enable.
          */
         'auto-delete-tenant-database' => false,

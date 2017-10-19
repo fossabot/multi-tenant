@@ -29,6 +29,27 @@ class WebsiteRepositoryTest extends Test
         $this->assertTrue($this->website->exists);
     }
 
+    /**
+     * @test
+     */
+    public function updates_website()
+    {
+        $this->setUpWebsites(true);
+
+        $this->websites->update($this->website);
+    }
+
+    /**
+     * @test
+     * @depends creates_website
+     */
+    public function deletes_website()
+    {
+        $this->websites->delete($this->website);
+
+        $this->assertFalse($this->website->exists);
+    }
+
     protected function duringSetUp(Application $app)
     {
         $this->setUpWebsites();

@@ -23,7 +23,13 @@ interface WebsiteRepository
      * @param string $uuid
      * @return Website|null
      */
-    public function findByUuid(string $uuid): ?Website;
+    public function findByUuid(string $uuid);
+
+    /**
+     * @param string $id
+     * @return Website|null
+     */
+    public function findById(string $id);
     /**
      * @param Website $website
      * @return Website

@@ -17,11 +17,13 @@ namespace Hyn\Tenancy\Listeners\Database;
 use Hyn\Tenancy\Abstracts\HostnameEvent;
 use Hyn\Tenancy\Abstracts\WebsiteEvent;
 use Hyn\Tenancy\Database\Connection;
+use Hyn\Tenancy\Traits\DispatchesEvents;
 use Illuminate\Contracts\Events\Dispatcher;
 use Hyn\Tenancy\Events;
 
 class MigratesTenants
 {
+    use DispatchesEvents;
     /**
      * @var Connection
      */
@@ -46,10 +48,14 @@ class MigratesTenants
      */
     public function migrate(WebsiteEvent $event): bool
     {
-        if ($path = config('tenancy.db.tenant-migrations-path')) {
-            return $this->connection->migrate($event->website, $path);
+        $path = config('tenancy.db.tenant-migrations-path');
+        
+        if ($path && $this->connection->migrate($event->website, $path)) {
+            $this->emitEvent(new Events\Websites\Migrated($event->website));
+            
+            return true;
         }
-
+        
         return true;
     }
 }

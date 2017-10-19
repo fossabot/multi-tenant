@@ -29,12 +29,12 @@ class HostnameIdentification
      * @param HostnameRepository $hostnameRepository
      * @return Hostname|null
      */
-    public function handle(Request $request, HostnameRepository $hostnameRepository): ?Hostname
+    public function handle(Request $request, HostnameRepository $hostnameRepository)
     {
         $hostname = env('TENANCY_CURRENT_HOSTNAME');
 
         if (!$hostname) {
-            $hostname = $request->server('SERVER_NAME');
+            $hostname = $request->getHost();
         }
 
         $hostname = $hostnameRepository->findByHostname($hostname);

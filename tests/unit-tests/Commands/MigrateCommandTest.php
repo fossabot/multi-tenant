@@ -14,12 +14,10 @@
 
 namespace Hyn\Tenancy\Tests\Commands;
 
-use Hyn\Tenancy\Database\Console\MigrateCommand;
+use Hyn\Tenancy\Database\Console\Migrations\MigrateCommand;
 use Hyn\Tenancy\Models\Website;
-use Hyn\Tenancy\Tests\Test;
-use Illuminate\Database\Eloquent\Collection;
 
-class MigrateCommandTest extends Test
+class MigrateCommandTest extends DatabaseCommandTest
 {
     /**
      * @test
@@ -35,26 +33,57 @@ class MigrateCommandTest extends Test
     /**
      * @test
      */
-    public function runs_on_tenants()
+    public function runs_migrate_on_one_tenant()
     {
-        $this->setUpHostnames(true);
-        $this->setUpWebsites(true, true);
+        /** @var Website $otherWebsite */
+        $otherWebsite = $this->website->replicate();
+        $this->websites->create($otherWebsite);
 
-        $code = $this->artisan('tenancy:migrate', [
-            '--realpath' => __DIR__ . '/../../migrations',
-            '-n' => 1
-        ]);
+        $this->connection->migrate($this->website, __DIR__ . '/../../migrations');
 
-        $this->assertEquals(0, $code, 'Tenant migration didn\'t work out');
+        $this->connection->set($this->website);
 
-        $this->websites->query()->chunk(10, function (Collection $websites) {
-            $websites->each(function (Website $website) {
-                $this->connection->set($website, $this->connection->migrationName());
-                $this->assertTrue(
-                    $this->connection->migration()->getSchemaBuilder()->hasTable('samples'),
-                    "Connection for {$website->uuid} has no table samples"
-                );
-            });
+        $this->assertTrue($this->connection->get()->getSchemaBuilder()->hasTable('samples'));
+
+        $this->connection->set($otherWebsite);
+
+        $this->assertFalse($this->connection->get()->getSchemaBuilder()->hasTable('samples'));
+    }
+
+    /**
+     * @test
+     */
+    public function runs_migrate_on_one_tenant_by_configuration()
+    {
+        /** @var Website $otherWebsite */
+        $otherWebsite = $this->website->replicate();
+        $this->websites->create($otherWebsite);
+
+        config(['tenancy.db.tenant-migrations-path' => realpath(__DIR__ . '/../../migrations')]);
+
+        $this->connection->migrate($this->website);
+
+        $this->connection->set($this->website);
+
+        $this->assertTrue($this->connection->get()->getSchemaBuilder()->hasTable('samples'));
+
+        $this->connection->set($otherWebsite);
+
+        $this->assertFalse($this->connection->get()->getSchemaBuilder()->hasTable('samples'));
+    }
+
+    /**
+     * @test
+     */
+    public function runs_migrate_on_tenants()
+    {
+        $this->migrateAndTest('migrate', function (Website $website) {
+            $this->connection->set($website);
+
+            $this->assertTrue(
+                $this->connection->get()->getSchemaBuilder()->hasTable('samples'),
+                "Connection for {$website->uuid} has no table samples"
+            );
         });
     }
 }

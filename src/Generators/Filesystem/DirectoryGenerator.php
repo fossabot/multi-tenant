@@ -14,6 +14,10 @@
 
 namespace Hyn\Tenancy\Generators\Filesystem;
 
+use Hyn\Tenancy\Events\Filesystem\DirectoryCreated;
+use Hyn\Tenancy\Events\Filesystem\DirectoryDeleted;
+use Hyn\Tenancy\Events\Filesystem\DirectoryRenamed;
+use Hyn\Tenancy\Traits\DispatchesEvents;
 use Illuminate\Contracts\Events\Dispatcher;
 use Hyn\Tenancy\Events\Websites as Events;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -21,6 +25,7 @@ use Illuminate\Support\Arr;
 
 class DirectoryGenerator
 {
+    use DispatchesEvents;
 
     /**
      * @param Dispatcher $events
@@ -37,7 +42,7 @@ class DirectoryGenerator
      */
     protected function filesystem(): Filesystem
     {
-        return app('tenant.disk');
+        return app('tenancy.disk');
     }
 
     /**
@@ -49,7 +54,15 @@ class DirectoryGenerator
     public function created(Events\Created $event): bool
     {
         if (config('tenancy.website.auto-create-tenant-directory')) {
-            return $this->filesystem()->makeDirectory($event->website->uuid);
+            $stat = $this->filesystem()->makeDirectory($event->website->uuid);
+
+            if ($stat) {
+                $this->emitEvent(
+                    new DirectoryCreated($event->website, $this->filesystem())
+                );
+            }
+
+            return $stat;
         }
 
         return true;
@@ -62,12 +75,20 @@ class DirectoryGenerator
     public function updated(Events\Updated $event): bool
     {
         $rename = config('tenancy.website.auto-rename-tenant-directory');
-
-        if ($rename && $uuid = Arr::get($event->dirty, 'uuid')) {
-            return $this->filesystem()->move(
+        if ($rename && ($uuid = Arr::get($event->dirty, 'uuid')) && $this->filesystem()->exists($uuid)) {
+            $stat = $this->filesystem()->rename(
                 $uuid,
                 $event->website->uuid
             );
+
+            if ($stat) {
+                $this->emitEvent(
+                    (new DirectoryRenamed($event->website, $this->filesystem()))
+                        ->setOld($uuid)
+                );
+            }
+
+            return $stat;
         }
 
         return true;
@@ -82,7 +103,15 @@ class DirectoryGenerator
     public function deleted(Events\Deleted $event): bool
     {
         if (config('tenancy.website.auto-delete-tenant-directory')) {
-            return $this->filesystem()->deleteDirectory($event->website->uuid);
+            $stat = $this->filesystem()->deleteDirectory($event->website->uuid);
+
+            if ($stat) {
+                $this->emitEvent(
+                    new DirectoryDeleted($event->website, $this->filesystem())
+                );
+            }
+
+            return $stat;
         }
 
         return true;

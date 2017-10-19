@@ -35,7 +35,7 @@ class ApacheGenerator implements VhostGenerator, ReloadsServices
      * @param Website $website
      * @return null|string
      */
-    public function media(Website $website): ?string
+    public function media(Website $website)
     {
         return $this->directory->setWebsite($website)->isLocal() && $this->directory->exists('media') ?
             $this->directory->path('media', true) :
@@ -48,7 +48,7 @@ class ApacheGenerator implements VhostGenerator, ReloadsServices
      */
     public function generate(Website $website): string
     {
-        return view('tenancy.generators::webserver.apache.vhost', [
+        return view(config('webserver.apache2.view'), [
             'website' => $website,
             'config' => config('webserver.apache2', []),
             'directory' => $this->directory->setWebsite($website),

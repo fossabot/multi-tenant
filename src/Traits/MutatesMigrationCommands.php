@@ -12,17 +12,16 @@
  * @see https://github.com/hyn/multi-tenant
  */
 
-namespace Hyn\Tenancy\Database\Console;
+namespace Hyn\Tenancy\Traits;
 
 use Hyn\Tenancy\Contracts\Repositories\WebsiteRepository;
 use Hyn\Tenancy\Database\Connection;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Migrations\Migrator;
 use Symfony\Component\Console\Input\InputOption;
-use Illuminate\Database\Console\Migrations\MigrateCommand as BaseCommand;
 
-class MigrateCommand extends BaseCommand
+trait MutatesMigrationCommands
 {
+    use AddWebsiteFilterOnCommand;
     /**
      * @var WebsiteRepository
      */
@@ -32,17 +31,13 @@ class MigrateCommand extends BaseCommand
      */
     private $connection;
 
-    /**
-     * Create a new migration command instance.
-     *
-     * @param  \Illuminate\Database\Migrations\Migrator $migrator
-     */
     public function __construct(Migrator $migrator)
     {
         parent::__construct($migrator);
 
-        $this->setName('tenancy:migrate');
+        $this->setName('tenancy:' . $this->getName());
         $this->specifyParameters();
+
         $this->websites = app(WebsiteRepository::class);
         $this->connection = app(Connection::class);
     }
@@ -56,15 +51,13 @@ class MigrateCommand extends BaseCommand
         $this->input->setOption('force', true);
         $this->input->setOption('database', $this->connection->migrationName());
 
-        $this->websites
-            ->query()
-            ->chunk(10, function (Collection $websites) {
-                $websites->each(function ($website) {
-                    $this->connection->set($website, $this->connection->migrationName());
+        $this->processHandle(function ($website) {
+            $this->connection->set($website, $this->connection->migrationName());
 
-                    parent::handle();
-                });
-            });
+            parent::handle();
+
+            $this->connection->purge($this->connection->migrationName());
+        });
     }
 
     /**
@@ -83,8 +76,14 @@ class MigrateCommand extends BaseCommand
             })->all();
         }
 
+        // Real path option is given.
         if (!is_null($realPath = $this->input->getOption('realpath'))) {
             return [$realPath];
+        }
+
+        // Tenant migrations path is configured.
+        if ($path = config('tenancy.db.tenant-migrations-path')) {
+            return [$path];
         }
 
         return array_merge(
@@ -100,6 +99,7 @@ class MigrateCommand extends BaseCommand
     protected function getOptions()
     {
         return array_merge([
+            $this->addWebsiteOption(),
             ['realpath', null, InputOption::VALUE_OPTIONAL, 'The absolute path to migration files.', null],
         ], parent::getOptions());
     }
