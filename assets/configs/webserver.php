@@ -30,7 +30,7 @@ return [
         /**
          * Mail address to connect certificates to.
          */
-        'email' => config('mail.from.address'),
+        'email' => env('LETS_ENCRYPT_EMAIL', config('mail.from.address')),
 
         /**
          * Specify the path to your public and private keys. If not specified, tenancy will generate this
@@ -161,7 +161,7 @@ return [
         /**
          * The php sock to be used.
          */
-        'php-sock' => 'unix:/var/run/php/php7.0-fpm.sock',
+        'php-sock' => env('PHP_FPM_SOCK', 'unix:/var/run/php/php7.1-fpm.sock'),
 
         /**
          * Define the ports of your Apache service.

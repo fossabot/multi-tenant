@@ -54,13 +54,6 @@ references:
             - POSTGRES_USER: testing
             - POSTGRES_PASSWORD: testing
 
-    boulder: &boulder
-        image: acmephp/testing-ca
-        name: boulder
-        environment:
-            - BOULDER_CALLBACK_PORT: 80
-            - BOULDER_MYSQL_PORT: 3306
-
     environment: &environment
         - DB_DATABASE: testing
         - DB_USERNAME: testing
@@ -75,7 +68,6 @@ jobs:
             - *mysql
             - *mariadb
             - *pgsql
-            - *boulder
         <<: *steps
     "php-7.1-apache":
         docker:
@@ -84,32 +76,32 @@ jobs:
             - *mysql
             - *mariadb
             - *pgsql
-            - *boulder
         <<: *steps
     "php-7.0-nginx":
+        environment:
+            - PHP_FPM_SOCK: unix:/var/run/php/php7.0-fpm.sock
         docker:
             - image: php:7.0-fpm
               environment: *environment
             - *mysql
             - *mariadb
             - *pgsql
-            - *boulder
         <<: *steps
     "php-7.1-nginx":
+        environment:
+            - PHP_FPM_SOCK: unix:/var/run/php/php7.1-fpm.sock
         docker:
             - image: php:7.1-fpm
               environment: *environment
             - *mysql
             - *mariadb
             - *pgsql
-            - *boulder
         <<: *steps
     coverage:
         docker:
             - image: php:7.1
               environment: *environment
             - *mariadb
-            - *boulder
         working_directory: ~/repo
         steps:
             - checkout
