@@ -6,13 +6,14 @@ references:
         steps:
             - checkout
             - run: apt-get -yqq update
-            - run: apt-get -yqq install git unzip zip libpq-dev mysql-client libpng-dev
+            - run: apt-get -yqq install git unzip zip libpq-dev mysql-client libpng-dev openssl
             - run: docker-php-ext-install pdo_pgsql pdo_mysql gd
             - run: curl -sS https://getcomposer.org/installer | php
             - run: chmod +x composer.phar
             - run: mv composer.phar /usr/local/bin/composer
             - run: composer config -g github-oauth.github.com $GITHUB_TOKEN
             - run: composer install -n --prefer-dist --no-progress -o
+            - run: openssl req -nodes -new -newkey rsa:2048 -x509 -keyout ci-lets-encrypt-private.pem -out ci-lets-encrypt-public.pem -subj "/C=NL/ST=Gelderland/L=Nijmegen/O=Hyn/OU=IT Department/CN=ssl.hyn.me"
             - run:
                 name: Wait for other docker instances to be up
                 command: sleep 10
@@ -50,6 +51,9 @@ references:
             - POSTGRES_DB: testing
             - POSTGRES_USER: testing
             - POSTGRES_PASSWORD: testing
+    boulder: &boulder
+        image: containous/boulder
+        name: boulder
     environment: &environment
         - DB_DATABASE: testing
         - DB_USERNAME: testing

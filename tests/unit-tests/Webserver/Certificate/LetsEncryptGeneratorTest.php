@@ -27,10 +27,10 @@ class LetsEncryptGeneratorTest extends Test
 
     protected function duringSetUp(Application $app)
     {
-        $app['config']->set('webserver.lets-encrypt.directory-url', 'http://boulder:4000');
-        $app['config']->set('webserver.lets-encrypt.agreement-url', 'http://boulder:4000/terms');
-        $app['config']->set('webserver.lets-encrypt.key-pair.private', __DIR__ . '/../../../../ci-lets-encrypt-private.pem');
-        $app['config']->set('webserver.lets-encrypt.key-pair.public', __DIR__ . '/../../../../ci-lets-encrypt-public.pem');
+        config(['webserver.lets-encrypt.directory-url' => 'http://boulder:4000']);
+        config(['webserver.lets-encrypt.agreement-url' => 'http://boulder:4000/terms']);
+        config(['webserver.lets-encrypt.key-pair.private' => __DIR__ . '/../../../../ci-lets-encrypt-private.pem']);
+        config(['webserver.lets-encrypt.key-pair.public' => __DIR__ . '/../../../../ci-lets-encrypt-public.pem']);
 
         $this->setUpHostnames();
         $this->setUpWebsites(true, true);

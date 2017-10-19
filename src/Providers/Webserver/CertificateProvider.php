@@ -29,7 +29,7 @@ use Illuminate\Support\ServiceProvider;
 
 class CertificateProvider extends ServiceProvider
 {
-    public function register()
+    public function boot()
     {
         $this->app->singleton(AcmeClient::class, function ($app) {
             return new AcmeClient(
