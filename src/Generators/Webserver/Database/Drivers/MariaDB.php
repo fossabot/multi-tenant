@@ -26,9 +26,9 @@ use Illuminate\Support\Arr;
 class MariaDB implements DatabaseGenerator
 {
     /**
-     * @param Created $event
-     * @param array $config
-     * @param Connection $connection
+     * @param  Created    $event
+     * @param  array      $config
+     * @param  Connection $connection
      * @return bool
      */
     public function created(Created $event, array $config, Connection $connection): bool
@@ -46,9 +46,9 @@ class MariaDB implements DatabaseGenerator
     }
 
     /**
-     * @param Updated $event
-     * @param array $config
-     * @param Connection $connection
+     * @param  Updated                  $event
+     * @param  array                    $config
+     * @param  Connection               $connection
      * @return bool
      * @throws GeneratorFailedException
      */
@@ -66,18 +66,23 @@ class MariaDB implements DatabaseGenerator
     }
 
     /**
-     * @param Deleted $event
-     * @param array $config
-     * @param Connection $connection
+     * @param  Deleted                  $event
+     * @param  array                    $config
+     * @param  Connection               $connection
      * @return bool
      * @throws GeneratorFailedException
      */
     public function deleted(Deleted $event, array $config, Connection $connection): bool
     {
-        if (!$connection->system()->statement("DROP DATABASE IF EXISTS `{$config['database']}`")) {
-            throw new GeneratorFailedException("Could not delete database {$config['database']}, the statement failed.");
-        }
+        $connection->get()->disconnect();
 
-        return true;
+        $user = function () use ($connection, $config) {
+            return $connection->system()->statement("DROP USER `{$config['username']}`@'{$config['host']}'");
+        };
+        $delete = function () use ($connection, $config) {
+            return $connection->system()->statement("DROP DATABASE IF EXISTS `{$config['database']}`");
+        };
+
+        return $delete() && $user();
     }
 }
