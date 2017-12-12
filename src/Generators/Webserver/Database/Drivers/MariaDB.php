@@ -74,8 +74,6 @@ class MariaDB implements DatabaseGenerator
      */
     public function deleted(Deleted $event, array $config, Connection $connection): bool
     {
-        $connection->get()->disconnect();
-
         $user = function () use ($connection, $config) {
             return $connection->system()->statement("DROP USER `{$config['username']}`@'{$config['host']}'");
         };
